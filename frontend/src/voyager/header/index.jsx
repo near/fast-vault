@@ -59,11 +59,6 @@ const path = props.path || "";
 const goBack = props.goBack || (() => {});
 const goForward = props.goForward || (() => {});
 const setLayout = props.setLayout || (() => {});
-const togglePreview = props.togglePreview || (() => {});
-
-const { DropdownMenu } = VM.require("efiz.near/widget/Module.DropdownMenu");
-
-DropdownMenu = DropdownMenu || (() => <></>);
 
 return (
   <Header>
@@ -83,45 +78,6 @@ return (
       <Button onClick={() => setLayout("GRID")}>
         <i className="bi bi-grid-3x3-gap"></i>
       </Button>
-      <Button onClick={() => setLayout("COLUMNS")}>
-        <i className="bi bi-columns-gap"></i>
-      </Button>
-      <Button onClick={togglePreview}>
-        <i className="bi bi-eye"></i>
-      </Button>
-      <DropdownMenu.Root>
-        <DropdownMenu.Trigger as={Button}>
-          <i className="bi bi-three-dots-vertical"></i>
-        </DropdownMenu.Trigger>
-        <DropdownMenu.Content>
-          <Wrapper>
-            <DropdownMenu.Item
-              className="menu__item"
-              onSelect={() => {
-                console.log("hey 1");
-              }}
-            >
-              Option 1
-            </DropdownMenu.Item>
-            <DropdownMenu.Item
-              className="menu__item"
-              onSelect={() => {
-                console.log("hey 2");
-              }}
-            >
-              Option 2
-            </DropdownMenu.Item>
-            <DropdownMenu.Item
-              className="menu__item"
-              onSelect={() => {
-                console.log("hey 3");
-              }}
-            >
-              Option 3
-            </DropdownMenu.Item>
-          </Wrapper>
-        </DropdownMenu.Content>
-      </DropdownMenu.Root>
     </ButtonRow>
   </Header>
 );
