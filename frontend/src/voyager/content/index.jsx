@@ -56,7 +56,8 @@ console.log("indexed", files);
 let data = {};
 if (files) {
   data = files.reduce((acc, file) => {
-    acc[file.value.name] = file.value.cid;
+    acc[file.value.name] =
+      file.value.cid + "|" + (file.value.fileType ?? "???");
     return acc;
   }, {});
 }
@@ -272,6 +273,7 @@ function RenderData({ data, layout }) {
                   data: dataList[key],
                   level: 0,
                   eFile: ({ key, data, level }) => {
+                    const dataParts = data.split("|");
                     const updatedPath = [path, key].join("/");
                     return (
                       <ContextMenu
@@ -290,11 +292,12 @@ function RenderData({ data, layout }) {
                           >
                             <ItemDetails>
                               <i className="bi bi-file"></i>
-                              <span>{key.split("/").pop()}</span>{" "}
+                              <span>{key.split("/").pop()}</span>
                             </ItemDetails>
                             <ItemInfo>
-                              <span>{calculateSize(data)}</span>
-                              <span>{determineType(updatedPath, data)}</span>
+                              <span>{formatBytes(0)}</span>
+                              {/* ^^TODO */}
+                              <span>{dataParts[1]}</span>
                               <span />
                             </ItemInfo>
                           </ItemContainer>
@@ -434,6 +437,32 @@ function RenderData({ data, layout }) {
 function getNestedData(data, pathArray) {
   return pathArray.reduce((currentData, key) => currentData[key] || {}, data);
 }
+
+// --- FV START ---
+// https://stackoverflow.com/questions/15900485/correct-way-to-convert-size-in-bytes-to-kb-mb-gb-in-javascript
+function formatBytes(bytes) {
+  const decimals = 2;
+  if (!bytes) return "0 Bytes";
+
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = [
+    "Bytes",
+    "KiB",
+    "MiB",
+    "GiB",
+    "TiB",
+    "PiB",
+    "EiB",
+    "ZiB",
+    "YiB",
+  ];
+
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+}
+// --- FV END ---
 
 return (
   <Content>
