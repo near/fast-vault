@@ -25,13 +25,16 @@ const setPath = props.setPath || (() => {});
 
 return (
   <Sidebar>
-    <Button onClick={() => setPath(`${context.accountId}`)}>Profile</Button>
+    <Button>IPFS</Button>
+    <Button>Source 2</Button>
+    <Button>etc</Button>
+    {/* <Button onClick={() => setPath(`${context.accountId}`)}>Profile</Button>
     <Button onClick={() => setPath(`${context.accountId}/widget`)}>
       Widgets
     </Button>
     <Button onClick={() => setPath(`${context.accountId}/thing`)}>
       Things
     </Button>
-    <Button onClick={() => setPath(`${context.accountId}/type`)}>Types</Button>
+    <Button onClick={() => setPath(`${context.accountId}/type`)}>Types</Button> */}
   </Sidebar>
 );

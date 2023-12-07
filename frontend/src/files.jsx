@@ -1,12 +1,11 @@
-const savedCreds = Storage.privateGet("ipfsCreds");
-if (savedCreds && !state.ipfsCreds) {
-  State.update({ ipfsCreds: JSON.parse(savedCreds) });
+const savedPassword = Storage.privateGet("encryptionPassword");
+if (savedPassword && !state.ipfsCreds) {
+  State.update({ password: JSON.parse(savedPassword) });
 }
 
 State.init({
   uploading: false,
   dialogIsOpen: false,
-  // ipfsCreds: JSON.parse(Storage.privateGet("ipfsCreds")), // doesn't work, always null on first pass
 });
 
 /**
@@ -96,32 +95,26 @@ const setDataUrlFromBlob = (blob) => {
 };
 
 // Show setup form if user has not entered IPFS credentials
-if (!state.ipfsCreds) {
+if (!state.password) {
   return (
     <div className="d-flex flex-column gap-1">
-      <div>Please enter API credentials for your IPFS pinning account</div>
+      <div>Please enter encryption password</div>
       <div className="d-flex flex-row gap-2">
         <input
           className="form-control"
           placeholder="username"
-          onChange={(e) => State.update({ formUsername: e.target.value })}
-        />
-        <input
-          className="form-control"
-          placeholder="password"
           onChange={(e) => State.update({ formPassword: e.target.value })}
         />
         <Widget
           src="near/widget/DIG.Button"
           props={{ label: "Save" }}
           onClick={() => {
-            const ipfsCreds = {
-              username: state.formUsername,
-              password: state.formPassword,
-            };
-            Storage.privateSet("ipfsCreds", JSON.stringify(ipfsCreds));
+            Storage.privateSet(
+              "encryptionPassword",
+              JSON.stringify(state.formPassword)
+            );
             State.update({
-              ipfsCreds,
+              password: state.formPassword,
             });
           }}
         />
@@ -135,11 +128,11 @@ return (
     <div className="d-flex flex-row justify-content-end">
       <Widget
         src="near/widget/DIG.Button"
-        props={{ label: "Change IPFS creds" }}
+        props={{ label: "Switch encryption password" }}
         onClick={() => {
-          Storage.privateSet("ipfsCreds", null);
+          Storage.privateSet("encryptionPassword", null);
           State.update({
-            ipfsCreds: null,
+            password: null,
           });
         }}
       />
@@ -150,17 +143,28 @@ return (
         Uploading{" "}
       </div>
     ) : (
-      <Files
-        multiple={false}
-        // accepts={["image/*"]}
-        minFileSize={1}
-        maxFileSize={500000000}
-        clickable
-        className="btn btn-outline-primary h-100 w-100 align-middle"
-        onChange={filesOnChange}
-      >
-        Upload a file
-      </Files>
+      // <Files
+      //   multiple={false}
+      //   // accepts={["image/*"]}
+      //   minFileSize={1}
+      //   maxFileSize={500000000}
+      //   clickable
+      //   className="btn btn-outline-primary h-100 w-100 align-middle"
+      //   onChange={filesOnChange}
+      // >
+      //   Upload a file
+      // </Files>
+      state.password && (
+        <Widget
+          src="fastvault.near/widget/EncryptedIpfsUpload"
+          props={{
+            password: state.password,
+            onUpload: (fname, cid) => {
+              writeAddToIndex(fname, cid);
+            },
+          }}
+        />
+      )
     )}
     {
       /* example of displaying an image in dialog */
