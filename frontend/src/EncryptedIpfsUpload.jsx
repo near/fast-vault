@@ -87,70 +87,70 @@ const encrypt = (message) => {
   return [nonce, sealed];
 };
 
-const onFilesChange = (files) => {
+/**
+ * Kicks off file upload
+ * @param {File[]} files limited to 1
+ */
+const filesOnChange = ([file]) => {
+  console.log("file", file);
   State.update({
     uploading: true,
-    files: [],
   });
-  if (files?.length > 0) {
-    files.map((file, index) => {
-      const reader = new FileReader();
-      reader.onload = (_) => {
-        const buf = new Uint8Array(reader.result);
-        const [nonce, ciphertext] = encrypt(buf);
-        const body = JSON.stringify({
-          name: file.name,
-          // convert uint8array to Array since stringify does weird formatting.
-          nonce: Array.from(nonce),
-          ciphertext: Array.from(ciphertext),
-        });
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (_) => {
+      const buf = new Uint8Array(reader.result);
+      const [nonce, ciphertext] = encrypt(buf);
+      const body = JSON.stringify({
+        name: file.name,
+        // convert uint8array to Array since stringify does weird formatting.
+        nonce: Array.from(nonce),
+        ciphertext: Array.from(ciphertext),
+      });
 
-        // Upload to IPFS
-        asyncFetch(ipfsUrl, {
-          method: "POST",
-          headers,
-          body,
-        }).then((res) => {
-          const cid = res.body.cid;
-          State.update({
-            files: [...state.files, { index, name: file.name, cid, nonce }],
-          });
+      // Upload to IPFS
+      asyncFetch(ipfsUrl, {
+        method: "POST",
+        headers,
+        body,
+      }).then((res) => {
+        const cid = res.body.cid;
 
-          if (onUpload) {
-            onUpload(file.name, cid);
-          }
-        });
-
-        State.update({ uploading: false });
-        if (props.update) {
-          props.update(state.files);
+        if (onUpload) {
+          onUpload(file.name, cid);
         }
-      };
-      reader.readAsArrayBuffer(file);
-    });
+      });
+
+      State.update({ uploading: false });
+    };
+    reader.readAsArrayBuffer(file);
   } else {
     State.update({
       uploading: false,
-      files: null,
     });
   }
 };
 
 return (
   <div className="d-inline-block">
-    <Files
-      multiple={true}
-      minFileSize={1}
-      clickable
-      className="btn btn-outline-primary"
-      onChange={onFilesChange}
-    >
-      {state.uploading
-        ? "Uploading"
-        : state.files.length > 0
-        ? "Replace All"
-        : buttonText}
-    </Files>
+    {state.uploading ? (
+      <div className="w-100" style={{ textAlign: "center" }}>
+        {" "}
+        Uploading{" "}
+      </div>
+    ) : (
+      <Files
+        multiple={false}
+        // accepts={["image/*"]}
+        minFileSize={1}
+        maxFileSize={500000000}
+        clickable
+        className="btn btn-outline-primary h-100 w-100 align-middle"
+        onChange={filesOnChange}
+      >
+        Upload a file
+      </Files>
+    )}
     {props.debug && (
       <div>
         <p>Debug Data:</p>

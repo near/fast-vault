@@ -48,7 +48,10 @@ const setPath = props.setPath || (() => {});
 const path = props.path || context.accountId;
 
 // --- FV START ---
-const files = Social.index("fastvault_experimental", "add");
+const files = Social.index("fastvault_experimental", "add", {
+  accountId: context.accountId,
+});
+// TODO decrypt each entry here
 console.log("indexed", files);
 let data = {};
 if (files) {
@@ -63,7 +66,7 @@ const showPreview = props.showPreview || false;
 const setSelectedPath = props.setSelectedPath || (() => {});
 const selectedPath = props.selectedPath || "";
 
-console.log(selectedPath);
+// console.log(selectedPath);
 
 if (!data) {
   return <p>Loading...</p>;

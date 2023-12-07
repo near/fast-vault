@@ -9,34 +9,6 @@ State.init({
 });
 
 /**
- * TODO currently receiving 400 error, no access to use `FormData` in VM
- * @param {File} file
- */
-const upload = (file) => {
-  // const formData = new FormData();
-  // formData.append("file", body);
-  file.path = "abc";
-  asyncFetch("https://ipfs.infura.io:5001/api/v0/add", {
-    method: "POST",
-    headers: {
-      // Accept: "application/json",
-      "Content-Type": file.type,
-      Authorization:
-        "Basic " +
-        btoa(state.ipfsCreds.username + ":" + state.ipfsCreds.password),
-    },
-    body: file,
-  }).then((res) => {
-    console.log("res", res);
-    State.update({ uploading: false });
-    // const cid = res.body.cid;
-    // State.update({ img: { cid } });
-
-    // TODO on success, write to index
-  });
-};
-
-/**
  * Write event to SocialDB that a file was added
  * @param {string} name
  * @param {string} cid
@@ -63,23 +35,6 @@ const writeAddToIndex = (name, cid) => {
 };
 
 /**
- * Kicks off file upload
- * @param {File[]} files limited to 1
- */
-const filesOnChange = ([file]) => {
-  console.log("typeof files", typeof files);
-  console.log("file", file);
-  if (file) {
-    State.update({ uploading: true });
-
-    // TODO encrypt file here before upload
-
-    upload(file);
-    // writeAddToIndex();
-  }
-};
-
-/**
  * Convert file to Data URL which can be passed into img src attribute for display
  * @param {*} blob
  */
@@ -98,7 +53,15 @@ const setDataUrlFromBlob = (blob) => {
 if (!state.password) {
   return (
     <div className="d-flex flex-column gap-1">
-      <div>Please enter encryption password</div>
+      <h2>Please enter encryption password</h2>
+      <p>
+        This will be used to encrypt future files and to attempt to decrypt
+        existing files.
+        <strong>
+          Changing this will not affect the encryption of previously uploaded
+          files
+        </strong>
+      </p>
       <div className="d-flex flex-row gap-2">
         <input
           className="form-control"
@@ -137,34 +100,16 @@ return (
         }}
       />
     </div>
-    {state.uploading ? (
-      <div className="w-100" style={{ textAlign: "center" }}>
-        {" "}
-        Uploading{" "}
-      </div>
-    ) : (
-      // <Files
-      //   multiple={false}
-      //   // accepts={["image/*"]}
-      //   minFileSize={1}
-      //   maxFileSize={500000000}
-      //   clickable
-      //   className="btn btn-outline-primary h-100 w-100 align-middle"
-      //   onChange={filesOnChange}
-      // >
-      //   Upload a file
-      // </Files>
-      state.password && (
-        <Widget
-          src="fastvault.near/widget/EncryptedIpfsUpload"
-          props={{
-            password: state.password,
-            onUpload: (fname, cid) => {
-              writeAddToIndex(fname, cid);
-            },
-          }}
-        />
-      )
+    {state.password && (
+      <Widget
+        src="fastvault.near/widget/EncryptedIpfsUpload"
+        props={{
+          password: state.password,
+          onUpload: (fname, cid) => {
+            writeAddToIndex(fname, cid);
+          },
+        }}
+      />
     )}
     {
       /* example of displaying an image in dialog */
