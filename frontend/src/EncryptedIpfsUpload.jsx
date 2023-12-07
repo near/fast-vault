@@ -1,6 +1,11 @@
 const buttonText = props.buttonText || "Upload a file";
 const ipfsUrl = props.ipfsUrl ?? "https://ipfs.near.social/add";
 
+// Headers for IPFS request.
+const headers = props.headers ?? {
+  Accept: "application/json",
+};
+
 // Optional: will load from local storage or recover from account id and password.
 const encryptSk = props.encryptSk;
 
@@ -103,9 +108,7 @@ const onFilesChange = (files) => {
         // Upload to IPFS
         asyncFetch(ipfsUrl, {
           method: "POST",
-          headers: {
-            Accept: "application/json",
-          },
+          headers,
           body,
         }).then((res) => {
           const cid = res.body.cid;
