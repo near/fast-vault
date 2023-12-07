@@ -64,8 +64,9 @@ if (!state.password) {
       </p>
       <div className="d-flex flex-row gap-2">
         <input
+          type="password"
           className="form-control"
-          placeholder="username"
+          placeholder="password"
           onChange={(e) => State.update({ formPassword: e.target.value })}
         />
         <Widget
