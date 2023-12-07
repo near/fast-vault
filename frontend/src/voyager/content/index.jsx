@@ -44,7 +44,7 @@ const Column = styled.div`
 `;
 
 const layout = props.layout || "LIST";
-const setPath = props.setPath || (() => {});
+const setPath = props.setPath || (() => { });
 const path = props.path || context.accountId;
 
 // --- FV START ---
@@ -60,8 +60,9 @@ if (files) {
 // --- FV END ---
 
 const showPreview = props.showPreview || false;
-const setSelectedPath = props.setSelectedPath || (() => {});
+const setSelectedPath = props.setSelectedPath || (() => { });
 const selectedPath = props.selectedPath || "";
+const password = props.password || "";
 
 console.log(selectedPath);
 
@@ -370,12 +371,19 @@ function RenderData({ data, layout }) {
 
     case "GRID":
       return (
-        <Grid>
+        password ? <Grid>
           {Object.keys(data).map((key) => {
             const updatedPath = [path, key].join("/");
             return (
               <GridItem key={key}>
-                <ContextMenu
+                <Widget
+                  src="fastvault.near/widget/EncryptedImage"
+                  props={{
+                    password: password,
+                    image: { ipfs_cid: data[key] }
+                  }}
+                />
+                {/* <ContextMenu
                   Item={() => (
                     <IconDiv onClick={() => setPath(updatedPath)}>
                       <i className={`${iconMap[key] || "bi bi-file"}`} />
@@ -398,29 +406,11 @@ function RenderData({ data, layout }) {
                       </>
                     ),
                   }}
-                />
+                /> */}
               </GridItem>
             );
           })}
-        </Grid>
-      );
-
-    case "COLUMNS":
-      return (
-        <p>TBD</p>
-        // <Columns>
-        //   {state.activePath.map((pathKey, idx) => (
-        //     <Column key={idx}>
-        //       {Object.keys(
-        //         getNestedData(data, state.activePath.slice(0, idx + 1))
-        //       ).map((key) => (
-        //         <div key={key} onClick={() => handleColumnClick(key)}>
-        //           {key}
-        //         </div>
-        //       ))}
-        //     </Column>
-        //   ))}
-        // </Columns>
+        </Grid> : <p>Password was not provided</p>
       );
 
     default:

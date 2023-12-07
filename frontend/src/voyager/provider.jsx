@@ -86,5 +86,6 @@ return (
     layout={state.layout}
     goBack={goBack}
     goForward={goForward}
+    password={props.password}
   />
 );
