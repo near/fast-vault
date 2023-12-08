@@ -44,11 +44,11 @@ const Column = styled.div`
 `;
 
 const layout = props.layout || "LIST";
-const setPath = props.setPath || (() => {});
+const setPath = props.setPath || (() => { });
 const path = props.path || context.accountId;
 
 const showPreview = props.showPreview || false;
-const setSelectedPath = props.setSelectedPath || (() => {});
+const setSelectedPath = props.setSelectedPath || (() => { });
 const selectedPath = props.selectedPath || "";
 const password = props.password || "";
 
@@ -422,32 +422,10 @@ function RenderData({ data, layout }) {
                     password: password,
                     image: { ipfs_cid: data[key].cid },
                     style: { height: "200px", width: "200px" },
+                    fallbackUrl: "https://ipfs.near.social/ipfs/bafkreihdxorcz6wflgfhrwtguibaf6pbizp7mpavkwuhqxniaqloq3f2ae",
                   }}
                 />
-                {/* <ContextMenu
-                  Item={() => (
-                    <IconDiv onClick={() => setPath(updatedPath)}>
-                      <i className={`${iconMap[key] || "bi bi-file"}`} />
-                      {key}
-                    </IconDiv>
-                  )}
-                  passProps={{
-                    delete: { path: updatedPath },
-                  }}
-                  handlers={{
-                    delete: ({ path }) => {
-                      deleteFile(path);
-                    },
-                  }}
-                  items={{
-                    delete: () => (
-                      <>
-                        <i className="menu__item__icon bi bi-x-lg" />
-                        Delete
-                      </>
-                    ),
-                  }}
-                /> */}
+                <p>{key}</p>
               </GridItem>
             );
           })}

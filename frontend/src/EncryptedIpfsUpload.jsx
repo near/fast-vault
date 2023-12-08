@@ -88,10 +88,9 @@ const filesOnChange = ([file]) => {
           };
           const encryptedMetadata = encryptObject(metadata, storageSk);
           onUpload(metadata, encryptedMetadata);
+          State.update({ uploading: false });
         }
       });
-
-      State.update({ uploading: false });
     };
     reader.readAsArrayBuffer(file);
   } else {
@@ -105,8 +104,7 @@ return (
   <div className="d-inline-block">
     {state.uploading ? (
       <div className="w-100" style={{ textAlign: "center" }}>
-        {" "}
-        Uploading{" "}
+        Uploading...
       </div>
     ) : (
       <Files
