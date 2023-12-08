@@ -1,3 +1,5 @@
+const accountId = props.accountId ?? context.accountId;
+
 const savedPassword = Storage.privateGet("encryptionPassword");
 if (savedPassword && !state.ipfsCreds) {
   State.update({ password: JSON.parse(savedPassword) });
@@ -86,55 +88,57 @@ if (!state.password) {
 }
 
 return (
-  <div className="d-flex flex-column gap-1">
-    <div className="d-flex flex-row justify-content-end">
+  accountId ? <div>
+    <div className="d-flex flex-column gap-1">
+      <div className="d-flex flex-row justify-content-end">
+        <Widget
+          src="near/widget/DIG.Button"
+          props={{ label: "Switch encryption password" }}
+          onClick={() => {
+            Storage.privateSet("encryptionPassword", null);
+            State.update({
+              password: null,
+            });
+          }}
+        />
+      </div>
+      {state.password && (
+        <Widget
+          src="fastvault.near/widget/EncryptedIpfsUpload"
+          props={{
+            password: state.password,
+            onUpload: (_metadata, encryptedMetadata) => {
+              writeAddToIndex(encryptedMetadata);
+            },
+          }}
+        />
+      )}
+      {
+        /* example of displaying an image in dialog */
+        state.dataUrl && (
+          <Widget
+            src="near/widget/DIG.Dialog"
+            props={{
+              type: "dialog",
+              // title: "Header",
+              // description: "Some description",
+              // onCancel: handleCancelFunction,
+              // onConfirm: handleConfirmFunction,
+              // cancelButtonText: "Cancel",
+              // confirmButtonText: "Confirm",
+              open: state.dialogIsOpen,
+              content: <img src={state.dataUrl} />,
+              onOpenChange: (value) => State.update({ dialogIsOpen: value }),
+            }}
+          />
+        )
+      }
       <Widget
-        src="near/widget/DIG.Button"
-        props={{ label: "Switch encryption password" }}
-        onClick={() => {
-          Storage.privateSet("encryptionPassword", null);
-          State.update({
-            password: null,
-          });
+        src="fastvault.near/widget/voyager.index"
+        props={{
+          password: state.password,
         }}
       />
     </div>
-    {state.password && (
-      <Widget
-        src="fastvault.near/widget/EncryptedIpfsUpload"
-        props={{
-          password: state.password,
-          onUpload: (_metadata, encryptedMetadata) => {
-            writeAddToIndex(encryptedMetadata);
-          },
-        }}
-      />
-    )}
-    {
-      /* example of displaying an image in dialog */
-      state.dataUrl && (
-        <Widget
-          src="near/widget/DIG.Dialog"
-          props={{
-            type: "dialog",
-            // title: "Header",
-            // description: "Some description",
-            // onCancel: handleCancelFunction,
-            // onConfirm: handleConfirmFunction,
-            // cancelButtonText: "Cancel",
-            // confirmButtonText: "Confirm",
-            open: state.dialogIsOpen,
-            content: <img src={state.dataUrl} />,
-            onOpenChange: (value) => State.update({ dialogIsOpen: value }),
-          }}
-        />
-      )
-    }
-    <Widget
-      src="fastvault.near/widget/voyager.index"
-      props={{
-        password: state.password,
-      }}
-    />
-  </div>
+  </div> : <div>You must loging in order to use the app</div>
 );
