@@ -41,6 +41,11 @@ const [storageSk, _] = useState(() => {
 });
 
 const renderItem = (a) => {
+  if (!a.value.nonce || !a.value.ciphertext) {
+    console.log("invalid file metadata to be decrypted", a);
+    return acc;
+  }
+
   const metadata = decryptObject(
     new Uint8Array(a.value.nonce),
     new Uint8Array(a.value.ciphertext),

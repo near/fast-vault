@@ -85,7 +85,7 @@ if (files) {
   data = files.reduce((acc, file) => {
     const encryptedMetadata = file.value;
     if (!encryptedMetadata.nonce || !encryptedMetadata.ciphertext) {
-      console.log("invalid file to be decrypted", file);
+      console.log("invalid file metadata to be decrypted", file);
       return acc;
     }
 
