@@ -5,7 +5,9 @@ const className = props.className;
 const style = props.style;
 const alt = props.alt ?? "Not set";
 const fallbackUrl = props.fallbackUrl;
-const unableToDecryptUrl = props.unableToDecryptUrl ?? "https://ipfs.near.social/ipfs/bafkreidkq63i7r6cyowrmqksj7mz2zr4iawkc5p232oxs7souopsknkcju";
+const unableToDecryptUrl =
+  props.unableToDecryptUrl ??
+  "https://ipfs.near.social/ipfs/bafkreidkq63i7r6cyowrmqksj7mz2zr4iawkc5p232oxs7souopsknkcju";
 const determineFileType = props.determineFileType;
 const fileType = props.fileType;
 const ipfsUrl =
@@ -21,6 +23,10 @@ if (!password) {
   return <> "props.password is required for EncryptedImage" </>;
 }
 
+const { decrypt, newSecretKey } = VM.require(
+  "fastvault.near/widget/module.crypto"
+);
+
 State.init({
   image,
 });
@@ -29,25 +35,6 @@ const thumb = (imageUrl) =>
   thumbnail && imageUrl && !imageUrl.startsWith("data:image/")
     ? `https://i.near.social/${thumbnail}/${imageUrl}`
     : imageUrl;
-
-const str2array = (str) => {
-  return new Uint8Array(Array.from(str).map((letter) => letter.charCodeAt(0)));
-};
-
-const recover_sk = () => {
-  const hashed_id = nacl.hash(str2array(context.accountId));
-  const hashed_pw = nacl.hash(str2array(password));
-  const sk = new Uint8Array(nacl.secretbox.keyLength);
-  for (var i = 0; i < hashed_id.length; i++) {
-    const sk_i = i % sk.length;
-    if (i >= sk.length) {
-      sk[sk_i] = sk[sk_i] + (hashed_id[i] + hashed_pw[i]);
-    } else {
-      sk[sk_i] = hashed_id[i] + hashed_pw[i];
-    }
-  }
-  return sk;
-};
 
 const [storageSk, _] = useState(() => {
   if (decryptSk) {
@@ -61,15 +48,11 @@ const [storageSk, _] = useState(() => {
   if (localSk && !password) {
     return localSk;
   }
-  const sk = recover_sk();
-  console.log("recovered decryption sk to local storage");
+  const sk = newSecretKey(context.accountId, password);
+  console.log("recovered decryption key for local storage");
   Storage.privateSet("storage_secret", sk);
   return sk;
 });
-
-const decrypt = (nonce, ciphertext) => {
-  return nacl.secretbox.open(ciphertext, nonce, storageSk);
-};
 
 const check = (headers) => {
   return (buffers) =>
@@ -99,7 +82,7 @@ const getFileType =
     }
   });
 
-function fetchImage(cid) {
+const fetchImage = (cid) => {
   asyncFetch(ipfsUrl(cid)).then((file) => {
     if (!file.ok) {
       console.log("IPFS fetch not ok", file);
@@ -109,7 +92,7 @@ function fetchImage(cid) {
     // Expect ciphertext and nonce to be Array type. Convert to Uint8Array.
     const ciphertext = new Uint8Array(file.body.ciphertext);
     const nonce = new Uint8Array(file.body.nonce);
-    const bytes = decrypt(nonce, ciphertext);
+    const bytes = decrypt(nonce, ciphertext, storageSk);
 
     if (bytes) {
       const fileType = fileType ?? `image/${getFileType(bytes)}`;
@@ -123,7 +106,7 @@ function fetchImage(cid) {
       });
     }
   });
-}
+};
 
 useEffect(() => {
   if (image.ipfs_cid) {

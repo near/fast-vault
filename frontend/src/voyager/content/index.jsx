@@ -47,6 +47,15 @@ const layout = props.layout || "LIST";
 const setPath = props.setPath || (() => {});
 const path = props.path || context.accountId;
 
+const showPreview = props.showPreview || false;
+const setSelectedPath = props.setSelectedPath || (() => {});
+const selectedPath = props.selectedPath || "";
+const password = props.password || "";
+
+const { newSecretKey, decryptObject } = VM.require(
+  "fastvault.near/widget/module.crypto"
+);
+
 const [storageSk, _] = useState(() => {
   if (decryptSk) {
     // decryptSk is available. use it instead of recovering
@@ -59,34 +68,17 @@ const [storageSk, _] = useState(() => {
   if (localSk && !password) {
     return localSk;
   }
-  const sk = recover_sk();
-  console.log("recovered decryption sk to local storage");
+  const sk = newSecretKey(context.accountId, password);
+  console.log("recovered decryption key from local storage");
   Storage.privateSet("storage_secret", sk);
   return sk;
 });
-
-const arr2str = (array) => {
-  var result = "";
-  for (var i = 0; i < array.length; i++) {
-    result += String.fromCharCode(array[i]);
-  }
-  return result;
-};
-
-const decrypt = (nonce, ciphertext) => {
-  return nacl.secretbox.open(ciphertext, nonce, storageSk);
-};
-
-// message: JS Object
-const decryptObject = (nonce, ciphertext) => {
-  return JSON.parse(arr2str(decrypt(nonce, ciphertext)));
-};
 
 // --- FV START ---
 const files = Social.index("fastvault_experimental", "add", {
   accountId: context.accountId,
 });
-// TODO decrypt each entry here
+
 console.log("indexed", files);
 let data = {};
 if (files) {
@@ -94,7 +86,8 @@ if (files) {
     const encryptedMetadata = file.value;
     const metadata = decryptObject(
       new Uint8Array(encryptedMetadata.nonce),
-      new Uint8Array(encryptedMetadata.ciphertext)
+      new Uint8Array(encryptedMetadata.ciphertext),
+      storageSk
     );
 
     // acc[metadata.filename] = metadata.cid + "|" + (metadata.filetype ?? "???");
@@ -109,11 +102,6 @@ if (files) {
   }, {});
 }
 // --- FV END ---
-
-const showPreview = props.showPreview || false;
-const setSelectedPath = props.setSelectedPath || (() => {});
-const selectedPath = props.selectedPath || "";
-const password = props.password || "";
 
 // console.log(selectedPath);
 
