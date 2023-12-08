@@ -49,46 +49,64 @@ const setDataUrlFromBlob = (blob) => {
   reader.readAsDataURL(blob);
 };
 
+const disclaimer =
+  "This is a hackathon project. Please do not upload large amounts of data or any sensitive information";
+const DisclaimerBanner = styled.div`
+  height: 2rem;
+  width: 100%;
+  background-color: #ffe484;
+  color: #21252a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  border-radius: 0.5rem;
+`;
+
 // Show setup form if user has not entered IPFS credentials
 if (!state.password) {
   return (
-    <div className="d-flex flex-column gap-1">
-      <h2>Please enter encryption password</h2>
-      <p>
-        This will be used to encrypt future files and to attempt to decrypt
-        existing files.
-        <strong>
-          Changing this will not affect the encryption of previously uploaded
-          files
-        </strong>
-      </p>
-      <div className="d-flex flex-row gap-2">
-        <input
-          type="password"
-          className="form-control"
-          placeholder="password"
-          onChange={(e) => State.update({ formPassword: e.target.value })}
-        />
-        <Widget
-          src="near/widget/DIG.Button"
-          props={{ label: "Save" }}
-          onClick={() => {
-            Storage.privateSet(
-              "encryptionPassword",
-              JSON.stringify(state.formPassword)
-            );
-            State.update({
-              password: state.formPassword,
-            });
-          }}
-        />
+    <>
+      <DisclaimerBanner>{disclaimer}</DisclaimerBanner>
+      <div className="d-flex flex-column gap-1">
+        <h2>Please enter encryption password</h2>
+        <p>
+          This will be used to encrypt future files and to attempt to decrypt
+          existing files.
+          <strong>
+            Changing this will not affect the encryption of previously uploaded
+            files
+          </strong>
+        </p>
+        <div className="d-flex flex-row gap-2">
+          <input
+            type="password"
+            className="form-control"
+            placeholder="password"
+            onChange={(e) => State.update({ formPassword: e.target.value })}
+          />
+          <Widget
+            src="near/widget/DIG.Button"
+            props={{ label: "Save" }}
+            onClick={() => {
+              Storage.privateSet(
+                "encryptionPassword",
+                JSON.stringify(state.formPassword)
+              );
+              State.update({
+                password: state.formPassword,
+              });
+            }}
+          />
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
-return (
-  accountId ? <div>
+return accountId ? (
+  <div>
+    <DisclaimerBanner>{disclaimer}</DisclaimerBanner>
     <div className="d-flex flex-column gap-1">
       <div className="d-flex flex-row justify-content-end">
         <Widget
@@ -140,5 +158,7 @@ return (
         }}
       />
     </div>
-  </div> : <div>You must loging in order to use the app</div>
+  </div>
+) : (
+  <div>You must log-in in order to use the app</div>
 );
