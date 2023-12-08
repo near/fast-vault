@@ -16,6 +16,10 @@ if (!password) {
   return <> "props.password is required for EncryptedIpfsUpload" </>;
 }
 
+const { encrypt, encryptObject, newSecretKey } = VM.require(
+  "fastvault.near/widget/module.crypto"
+);
+
 const onUpload =
   props.onUpload ??
   ((metadata, encryptedMetadata) => {
@@ -31,28 +35,6 @@ initState({
   files: [],
 });
 
-const str2array = (str) => {
-  return new Uint8Array(Array.from(str).map((letter) => letter.charCodeAt(0)));
-};
-
-// array: Uint8Array -> Array
-const array2buf = (array) => Array.from(array);
-
-const recover_sk = () => {
-  const hashed_id = nacl.hash(str2array(context.accountId));
-  const hashed_pw = nacl.hash(str2array(password));
-  const sk = new Uint8Array(nacl.secretbox.keyLength);
-  for (var i = 0; i < hashed_id.length; i++) {
-    const sk_i = i % sk.length;
-    if (i >= sk.length) {
-      sk[sk_i] = sk[sk_i] + (hashed_id[i] + hashed_pw[i]);
-    } else {
-      sk[sk_i] = hashed_id[i] + hashed_pw[i];
-    }
-  }
-  return sk;
-};
-
 const [storageSk, _] = useState(() => {
   if (encryptSk) {
     // encryptSk is available. use it instead of recovering
@@ -65,44 +47,11 @@ const [storageSk, _] = useState(() => {
   if (localSk && !password) {
     return localSk;
   }
-  const sk = recover_sk();
-  console.log("created a new secret key to be set to local storage");
+  const sk = newSecretKey(context.accountId, password);
+  console.log("recovered encryption key for local storage");
   Storage.privateSet("storage_secret", sk);
   return sk;
 });
-
-const new_nonce = (message) => {
-  const hash = nacl.hash(message);
-  const nonce = new Uint8Array(nacl.secretbox.nonceLength);
-  for (var i = 0; i < nonce.length; i++) {
-    if (i >= hash.length) {
-      nonce[i] += hash[i];
-    } else {
-      nonce[i] = i & hash[i];
-    }
-  }
-  return nonce;
-};
-
-// message: Uint8Array
-const encrypt = (message) => {
-  const nonce = new_nonce(message);
-  const ciphertext = nacl.secretbox(message, nonce, storageSk);
-  return {
-    nonce: Array.from(nonce),
-    ciphertext: Array.from(ciphertext),
-  };
-};
-
-// message: str
-const encryptStr = (text) => {
-  return encrypt(str2array(text));
-};
-
-// message: JS Object
-const encryptObject = (obj) => {
-  return encrypt(str2array(JSON.stringify(obj)));
-};
 
 /**
  * Kicks off file upload
@@ -117,7 +66,7 @@ const filesOnChange = ([file]) => {
     const reader = new FileReader();
     reader.onload = (_) => {
       const buf = new Uint8Array(reader.result);
-      const { nonce, ciphertext } = encrypt(buf);
+      const { nonce, ciphertext } = encrypt(buf, storageSk);
       const body = JSON.stringify({
         name: file.name,
         nonce,
@@ -137,7 +86,7 @@ const filesOnChange = ([file]) => {
             byteSize: ciphertext.length,
             cid: res.body.cid,
           };
-          const encryptedMetadata = encryptObject(metadata);
+          const encryptedMetadata = encryptObject(metadata, storageSk);
           onUpload(metadata, encryptedMetadata);
         }
       });
