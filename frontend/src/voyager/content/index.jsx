@@ -117,6 +117,8 @@ if (!data) {
 State.init({
   activePath: [],
   selectedPath: "",
+  showTextDialog: false,
+  dataToDisplay: null
 });
 
 function setActivePath(v) {
@@ -321,7 +323,11 @@ function RenderData({ data, layout }) {
                           // TODO: Honestly, eFile and eFolder should be the same component.
                           <ItemContainer
                             onDoubleClick={() => setPath(updatedPath)} // open file
-                            onClick={() => setSelectedPath(updatedPath)}
+                            onClick={() => {
+                              console.log("clicked file ln 325", data)
+                              data.key = key;
+                              State.update({ dataToDisplay: data });
+                            }}
                             style={{
                               marginLeft: level * 20,
                               backgroundColor:
@@ -331,7 +337,7 @@ function RenderData({ data, layout }) {
                             }}
                           >
                             <ItemDetails>
-                              <i className="bi bi-file"></i>
+                              <i className="bi bi-file"></i>  
                               <span>{key.split("/").pop()}</span>
                             </ItemDetails>
                             <ItemInfo>
@@ -485,5 +491,24 @@ return (
         </div>
       </Overlay>
     )}
+          <Widget
+            src="near/widget/DIG.Dialog"
+            props={{
+              type: "dialog",
+              open: !!state.dataToDisplay,
+              confirmButtonText: "Close",
+              actionButtons: <></>,
+              content: <Widget
+              src="fastvault.near/widget/EncryptedText"
+              props={{
+                password: password,
+                cid: state.dataToDisplay?.cid,
+                fileType: state.dataToDisplay?.filetype,
+                key: state.dataToDisplay?.key,
+              }}
+               />,
+              onOpenChange: (value) => State.update({ dataToDisplay: null }),
+            }}
+          />
   </Content>
 );
