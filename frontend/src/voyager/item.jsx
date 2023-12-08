@@ -1,4 +1,3 @@
-
 State.init({
   expandedKeys: {},
 });
@@ -26,10 +25,10 @@ function RecursiveItem({ data, path, eFolder, eFile, level }) {
   eFolder = eFolder || defaultFolder;
   eFile = eFile || defaultFile;
 
-  if (typeof item === "object") {
+  if (typeof item.value === "object") {
     const isExpanded = !!state.expandedKeys[path];
     return (
-      <div style={{ marginLeft: level * 20}}>
+      <div style={{ marginLeft: level * 20 }}>
         <eFolder
           key={path}
           isExpanded={isExpanded}

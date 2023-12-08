@@ -44,7 +44,7 @@ const Column = styled.div`
 `;
 
 const layout = props.layout || "LIST";
-const setPath = props.setPath || (() => { });
+const setPath = props.setPath || (() => {});
 const path = props.path || context.accountId;
 
 const [storageSk, _] = useState(() => {
@@ -97,14 +97,21 @@ if (files) {
       new Uint8Array(encryptedMetadata.ciphertext)
     );
 
-    acc[metadata.filename] = metadata.cid + "|" + (metadata.filetype ?? "???");
+    // acc[metadata.filename] = metadata.cid + "|" + (metadata.filetype ?? "???");
+    acc[metadata.filename] = {
+      value: metadata.cid + "|" + (metadata.filetype ?? "???"),
+      cid: metadata.cid,
+      filetype: metadata.filetype,
+      byteSize: metadata.byteSize,
+    };
+
     return acc;
   }, {});
 }
 // --- FV END ---
 
 const showPreview = props.showPreview || false;
-const setSelectedPath = props.setSelectedPath || (() => { });
+const setSelectedPath = props.setSelectedPath || (() => {});
 const selectedPath = props.selectedPath || "";
 const password = props.password || "";
 
@@ -314,7 +321,6 @@ function RenderData({ data, layout }) {
                   data: dataList[key],
                   level: 0,
                   eFile: ({ key, data, level }) => {
-                    const dataParts = data.split("|");
                     const updatedPath = [path, key].join("/");
                     return (
                       <ContextMenu
@@ -336,9 +342,9 @@ function RenderData({ data, layout }) {
                               <span>{key.split("/").pop()}</span>
                             </ItemDetails>
                             <ItemInfo>
-                              <span>{formatBytes(0)}</span>
+                              <span>{formatBytes(data.byteSize)}</span>
                               {/* ^^TODO */}
-                              <span>{dataParts[1]}</span>
+                              <span>{data.filetype}</span>
                               <span />
                             </ItemInfo>
                           </ItemContainer>
@@ -416,8 +422,8 @@ function RenderData({ data, layout }) {
       );
 
     case "GRID":
-      return (
-        password ? <Grid>
+      return password ? (
+        <Grid>
           {Object.keys(data).map((key) => {
             const updatedPath = [path, key].join("/");
             return (
@@ -426,7 +432,7 @@ function RenderData({ data, layout }) {
                   src="fastvault.near/widget/EncryptedImage"
                   props={{
                     password: password,
-                    image: { ipfs_cid: data[key] }
+                    image: { ipfs_cid: data[key].cid },
                   }}
                 />
                 {/* <ContextMenu
@@ -456,7 +462,9 @@ function RenderData({ data, layout }) {
               </GridItem>
             );
           })}
-        </Grid> : <p>Password was not provided</p>
+        </Grid>
+      ) : (
+        <p>Password was not provided</p>
       );
 
     default:
