@@ -66,8 +66,8 @@ const [storageSk, _] = useState(() => {
   return sk;
 });
 
-const decrypt = (nonce, sealed) => {
-  return nacl.secretbox.open(sealed, nonce, storageSk);
+const decrypt = (nonce, ciphertext) => {
+  return nacl.secretbox.open(ciphertext, nonce, storageSk);
 };
 
 const check = (headers) => {
@@ -105,6 +105,7 @@ function fetchImage(cid) {
       return;
     }
 
+    // Expect ciphertext and nonce to be Array type. Convert to Uint8Array.
     const ciphertext = new Uint8Array(file.body.ciphertext);
     const nonce = new Uint8Array(file.body.nonce);
     const bytes = decrypt(nonce, ciphertext);

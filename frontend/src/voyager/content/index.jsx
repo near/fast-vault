@@ -47,6 +47,41 @@ const layout = props.layout || "LIST";
 const setPath = props.setPath || (() => {});
 const path = props.path || context.accountId;
 
+const [storageSk, _] = useState(() => {
+  if (decryptSk) {
+    // decryptSk is available. use it instead of recovering
+    if (password) {
+      console.log("Utilizing decryptSk over password");
+    }
+    return decryptSk;
+  }
+  const localSk = Storage.privateGet("storage_secret");
+  if (localSk && !password) {
+    return localSk;
+  }
+  const sk = recover_sk();
+  console.log("recovered decryption sk to local storage");
+  Storage.privateSet("storage_secret", sk);
+  return sk;
+});
+
+const arr2str = (array) => {
+  var result = "";
+  for (var i = 0; i < array.length; i++) {
+    result += String.fromCharCode(array[i]);
+  }
+  return result;
+};
+
+const decrypt = (nonce, ciphertext) => {
+  return nacl.secretbox.open(ciphertext, nonce, storageSk);
+};
+
+// message: JS Object
+const decryptObject = (nonce, ciphertext) => {
+  return JSON.parse(arr2str(decrypt(nonce, ciphertext)));
+};
+
 // --- FV START ---
 const files = Social.index("fastvault_experimental", "add", {
   accountId: context.accountId,
@@ -56,8 +91,13 @@ console.log("indexed", files);
 let data = {};
 if (files) {
   data = files.reduce((acc, file) => {
-    acc[file.value.name] =
-      file.value.cid + "|" + (file.value.fileType ?? "???");
+    const encryptedMetadata = file.value;
+    const metadata = decryptObject(
+      new Uint8Array(encryptedMetadata.nonce),
+      new Uint8Array(encryptedMetadata.ciphertext)
+    );
+
+    acc[metadata.filename] = metadata.cid + "|" + (metadata.filetype ?? "???");
     return acc;
   }, {});
 }
