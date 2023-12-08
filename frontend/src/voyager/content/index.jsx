@@ -421,6 +421,7 @@ function RenderData({ data, layout }) {
                   props={{
                     password: password,
                     image: { ipfs_cid: data[key].cid },
+                    style: { height: "200px", width: "200px" },
                   }}
                 />
                 {/* <ContextMenu
