@@ -13,16 +13,14 @@ State.init({
  * @param {string} name
  * @param {string} cid
  */
-const writeAddToIndex = (name, cid) => {
+const writeAddToIndex = (encryptedMetadata) => {
   Social.set(
     {
       index: {
         fastvault_experimental: JSON.stringify({
           key: "add",
-          value: {
-            name,
-            cid,
-          },
+          // encryptedMetadata is of the form { nonce, ciphertext },
+          value: encryptedMetadata,
         }),
       },
     },
@@ -106,8 +104,8 @@ return (
         src="fastvault.near/widget/EncryptedIpfsUpload"
         props={{
           password: state.password,
-          onUpload: (fname, cid) => {
-            writeAddToIndex(fname, cid);
+          onUpload: (_metadata, encryptedMetadata) => {
+            writeAddToIndex(encryptedMetadata);
           },
         }}
       />

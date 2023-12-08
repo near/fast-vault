@@ -18,10 +18,10 @@ if (!password) {
 
 const onUpload =
   props.onUpload ??
-  ((filename, cid) => {
+  ((metadata, encryptedMetadata) => {
     if (props.debug) {
       console.log(
-        `uploaded encrypted file=${filename} to ipfs with cid=${cid}`
+        `Uploaded metadata=${metadata}. Encrypted form can be decrypted w/ password: ${encryptedMetadata}`
       );
     }
   });
@@ -34,6 +34,9 @@ initState({
 const str2array = (str) => {
   return new Uint8Array(Array.from(str).map((letter) => letter.charCodeAt(0)));
 };
+
+// array: Uint8Array -> Array
+const array2buf = (array) => Array.from(array);
 
 const recover_sk = () => {
   const hashed_id = nacl.hash(str2array(context.accountId));
@@ -69,22 +72,36 @@ const [storageSk, _] = useState(() => {
 });
 
 const new_nonce = (message) => {
-  const encoded = nacl.hash(message);
+  const hash = nacl.hash(message);
   const nonce = new Uint8Array(nacl.secretbox.nonceLength);
   for (var i = 0; i < nonce.length; i++) {
-    if (i >= encoded.length) {
-      nonce[i] = i & 0xff;
+    if (i >= hash.length) {
+      nonce[i] += hash[i];
     } else {
-      nonce[i] = i & encoded[i];
+      nonce[i] = i & hash[i];
     }
   }
   return nonce;
 };
 
+// message: Uint8Array
 const encrypt = (message) => {
   const nonce = new_nonce(message);
-  const sealed = nacl.secretbox(message, nonce, storageSk);
-  return [nonce, sealed];
+  const ciphertext = nacl.secretbox(message, nonce, storageSk);
+  return {
+    nonce: Array.from(nonce),
+    ciphertext: Array.from(ciphertext),
+  };
+};
+
+// message: str
+const encryptStr = (text) => {
+  return encrypt(str2array(text));
+};
+
+// message: JS Object
+const encryptObject = (obj) => {
+  return encrypt(str2array(JSON.stringify(obj)));
 };
 
 /**
@@ -100,12 +117,11 @@ const filesOnChange = ([file]) => {
     const reader = new FileReader();
     reader.onload = (_) => {
       const buf = new Uint8Array(reader.result);
-      const [nonce, ciphertext] = encrypt(buf);
+      const { nonce, ciphertext } = encrypt(buf);
       const body = JSON.stringify({
         name: file.name,
-        // convert uint8array to Array since stringify does weird formatting.
-        nonce: Array.from(nonce),
-        ciphertext: Array.from(ciphertext),
+        nonce,
+        ciphertext,
       });
 
       // Upload to IPFS
@@ -114,10 +130,15 @@ const filesOnChange = ([file]) => {
         headers,
         body,
       }).then((res) => {
-        const cid = res.body.cid;
-
         if (onUpload) {
-          onUpload(file.name, cid);
+          const metadata = {
+            filename: file.name,
+            filetype: file.type,
+            byteSize: ciphertext.length,
+            cid: res.body.cid,
+          };
+          const encryptedMetadata = encryptObject(metadata);
+          onUpload(metadata, encryptedMetadata);
         }
       });
 
