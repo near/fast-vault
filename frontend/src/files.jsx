@@ -132,6 +132,11 @@ return (
         />
       )
     }
-    <Widget src="fastvault.near/widget/voyager.index" />
+    <Widget
+      src="fastvault.near/widget/voyager.index"
+      props={{
+        password: state.password,
+      }}
+    />
   </div>
 );

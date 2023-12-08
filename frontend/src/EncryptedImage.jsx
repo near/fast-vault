@@ -5,6 +5,7 @@ const className = props.className;
 const style = props.style;
 const alt = props.alt ?? "Not set";
 const fallbackUrl = props.fallbackUrl;
+const unableToDecryptUrl = props.unableToDecryptUrl ?? "https://ipfs.near.social/ipfs/bafkreidkq63i7r6cyowrmqksj7mz2zr4iawkc5p232oxs7souopsknkcju";
 const determineFileType = props.determineFileType;
 const fileType = props.fileType;
 const ipfsUrl =
@@ -116,6 +117,9 @@ function fetchImage(cid) {
       });
     } else {
       console.log(`could not decrypt '${file.body.name}'`);
+      State.update({
+        imageUrl: unableToDecryptUrl,
+      });
     }
   });
 }
