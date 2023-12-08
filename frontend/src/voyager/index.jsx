@@ -67,13 +67,6 @@ function Sidebar({ setPath, setFilesSource, setHistory }) {
   );
 }
 
-function setFilesSource(source) {
-  State.update({
-    filesSource: source,
-  });
-  console.log("File source set to:", state.filesSource);
-}
-
 return (
   <Widget
     src="fastvault.near/widget/voyager.provider"

@@ -35,12 +35,10 @@ function setPath(v) {
 }
 
 function setFilesSource(source) {
-  console.log("setFilesSource", source);
-  console.log("Before:", state.filesSource);
   State.update({
     filesSource: source,
   });
-  console.log("After:", state.filesSource);
+  console.log("File source set to:", state.filesSource);
 }
 
 function goBack() {
