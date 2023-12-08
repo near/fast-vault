@@ -9,6 +9,7 @@ State.init({
   currentHistoryIndex: 0,
   showPreview: false,
   selectedPath: "",
+  filesSource: "BOS_IPFS",
 });
 
 function isNearAccount(str) {
@@ -31,6 +32,15 @@ function setPath(v) {
     history: updatedHistory,
     currentHistoryIndex: updatedHistory.length - 1,
   });
+}
+
+function setFilesSource(source) {
+  console.log("setFilesSource", source);
+  console.log("Before:", state.filesSource);
+  State.update({
+    filesSource: source,
+  });
+  console.log("After:", state.filesSource);
 }
 
 function goBack() {
@@ -76,6 +86,7 @@ const Children = props.Children;
 return (
   <Children
     setPath={setPath}
+    setFilesSource={setFilesSource}
     setHistory={setHistory}
     setLayout={setLayout}
     showPreview={state.showPreview}

@@ -21,20 +21,25 @@ const Button = styled.button`
   }
 `;
 
-const setPath = props.setPath || (() => {});
+const setPath = props.setPath || (() => { });
+
+const setFilesSource = props.setFilesSource || (() => {
+  console.log("No file source handler")
+});
 
 return (
   <Sidebar>
-    <Button>IPFS</Button>
-    <Button>Source 2</Button>
-    <Button>etc</Button>
-    {/* <Button onClick={() => setPath(`${context.accountId}`)}>Profile</Button>
-    <Button onClick={() => setPath(`${context.accountId}/widget`)}>
-      Widgets
+    <Button onClick={() => {
+      setFilesSource("BOS_IPFS");
+      setPath(`${context.accountId}/bos_ipfs`)
+    }}>
+      BOS IPFS
     </Button>
-    <Button onClick={() => setPath(`${context.accountId}/thing`)}>
-      Things
+    <Button onClick={() => {
+      setFilesSource("NEAR_FS");
+      setPath(`${context.accountId}/near_fs`)
+    }}>
+      NEAR FS
     </Button>
-    <Button onClick={() => setPath(`${context.accountId}/type`)}>Types</Button> */}
   </Sidebar>
 );

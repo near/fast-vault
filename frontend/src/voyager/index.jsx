@@ -30,6 +30,7 @@ function Content({
   layout,
   path,
   setPath,
+  setFilesSource,
   showPreview,
   selectedPath,
   setSelectedPath,
@@ -42,6 +43,7 @@ function Content({
         layout,
         path,
         setPath,
+        setFilesSource,
         showPreview,
         selectedPath,
         setSelectedPath,
@@ -51,17 +53,25 @@ function Content({
   );
 }
 
-function Sidebar({ setPath, setHistory }) {
+function Sidebar({ setPath, setFilesSource, setHistory }) {
   return (
     <Widget
       src="fastvault.near/widget/voyager.sidebar.index"
       props={{
         path,
         setPath,
+        setFilesSource,
         setHistory,
       }}
     />
   );
+}
+
+function setFilesSource(source) {
+  State.update({
+    filesSource: source,
+  });
+  console.log("File source set to:", state.filesSource);
 }
 
 return (
@@ -70,6 +80,7 @@ return (
     props={{
       path: props.path,
       password: props.password,
+      setFilesSource: props.setFilesSource,
       Children: (p) => (
         <Container>
           <Sidebar {...p} />
