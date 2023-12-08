@@ -324,9 +324,11 @@ function RenderData({ data, layout }) {
                           <ItemContainer
                             onDoubleClick={() => setPath(updatedPath)} // open file
                             onClick={() => {
+                              if (data.filetype.includes('text')) {
                               console.log("clicked file ln 325", data)
                               data.key = key;
                               State.update({ dataToDisplay: data });
+                              } 
                             }}
                             style={{
                               marginLeft: level * 20,
