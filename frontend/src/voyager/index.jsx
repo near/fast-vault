@@ -33,6 +33,7 @@ function Content({
   showPreview,
   selectedPath,
   setSelectedPath,
+  password,
 }) {
   return (
     <Widget
@@ -44,6 +45,7 @@ function Content({
         showPreview,
         selectedPath,
         setSelectedPath,
+        password,
       }}
     />
   );
@@ -67,6 +69,7 @@ return (
     src="fastvault.near/widget/voyager.provider"
     props={{
       path: props.path,
+      password: props.password,
       Children: (p) => (
         <Container>
           <Sidebar {...p} />
