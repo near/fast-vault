@@ -34,11 +34,12 @@ const newSecretKey = (accountId, password) => {
 const newNonce = (message) => {
   const hash = nacl.hash(message);
   const nonce = new Uint8Array(nacl.secretbox.nonceLength);
-  for (var i = 0; i < nonce.length; i++) {
-    if (i >= hash.length) {
-      nonce[i] += hash[i];
+  for (var i = 0; i < hash.length; i++) {
+    const n_i = i % nonce.length;
+    if (i >= nonce.length) {
+      nonce[n_i] += hash[i];
     } else {
-      nonce[i] = i & hash[i];
+      nonce[n_i] = i & hash[i];
     }
   }
   return nonce;
